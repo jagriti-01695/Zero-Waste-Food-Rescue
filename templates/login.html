@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Full Screen Background Wrapper -->
+<div class="position-relative w-100 d-flex justify-content-center align-items-center py-5" style="min-height: 90vh; background: url('{{ url_for('static', filename='images/hero_image.jpg') }}') no-repeat center center / cover; margin-top: -1.5rem;">
+  
+  <!-- Dark overlay to make the glass card pop -->
+  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 40, 20, 0.5); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);"></div>
+
+  <div class="card glass-card p-5 shadow-lg border-0 fade-in-up position-relative" style="width: 450px; max-width: 100%; z-index: 10;">
+    
+    <div class="text-center mb-4">
+      <div class="bg-success bg-opacity-10 d-inline-block p-3 rounded-circle text-success mb-3">
+        <i class="fa-solid fa-seedling fa-2x"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Welcome Back!</h3>
+      <p class="text-muted">Reduce waste. Share food. Help society.</p>
+    </div>
+
+    <form method="POST" id="loginForm">
+      {{ form.hidden_tag() }}
+
+      <!-- Email -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.email.label }}</label>
+        <div class="input-group input-group-lg search-input-group">
+          <span class="input-group-text"><i class="fa-regular fa-envelope text-muted"></i></span>
+          {{ form.email(class="form-control", placeholder="Enter your email") }}
+        </div>
+        {% if form.email.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.email.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.password.label }}</label>
+        <div class="input-group input-group-lg search-input-group">
+          <span class="input-group-text"><i class="fa-solid fa-lock text-muted"></i></span>
+          {{ form.password(class="form-control border-end-0", placeholder="Enter password", id="password") }}
+          <button type="button" class="btn bg-white border-0 border-start-0 px-3" onclick="togglePassword()">
+            <i class="fa-regular fa-eye text-muted" id="eyeIcon"></i>
+          </button>
+        </div>
+        {% if form.password.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.password.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <!-- Remember + Forgot -->
+      <div class="d-flex justify-content-between align-items-center mb-4 small">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input border-success" id="remember"> 
+          <label class="form-check-label text-muted" for="remember">Remember me</label>
+        </div>
+        <a href="#" class="text-success text-decoration-none fw-semibold">Forgot Password?</a>
+      </div>
+
+      <!-- Button -->
+      {{ form.submit(class="btn btn-success btn-lg w-100 shadow-sm rounded-pill fw-bold", id="loginBtn") }}
+
+      <!-- Register -->
+      <p class="text-center mt-4 mb-0 text-muted">
+        Don't have an account? <a href="/register" class="text-success fw-bold text-decoration-none">Create one</a>
+      </p>
+
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  function togglePassword() {
+    let pass = document.getElementById("password");
+    let icon = document.getElementById("eyeIcon");
+    if (pass.type === "password") {
+      pass.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    } else {
+      pass.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
+  }
+
+  document.getElementById("loginForm").addEventListener("submit", function(e) {
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let valid = true;
+
+    // Reset errors
+    document.getElementById("emailError").innerText = "";
+    document.getElementById("passwordError").innerText = "";
+
+    // Email validation
+    if (!email.includes("@")) {
+      document.getElementById("emailError").innerText = "Please enter a valid email address.";
+      valid = false;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      document.getElementById("passwordError").innerText = "Password must be at least 6 characters.";
+      valid = false;
+    }
+
+    if (!valid) {
+      e.preventDefault();
+    } else {
+      // Loading effect
+      let btn = document.getElementById("loginBtn");
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i>Logging in...';
+      btn.disabled = true;
+    }
+  });
+</script>
+
+{% endblock %}

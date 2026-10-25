@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Full Screen Background Wrapper -->
+<div class="position-relative w-100 d-flex justify-content-center align-items-center py-5" style="min-height: 90vh; background: url(&quot;{{ url_for('static', filename='images/hero_image.jpg') }}&quot;) no-repeat center center / cover; margin-top: -1.5rem;">
+  
+  <!-- Dark overlay to make the glass card pop -->
+  <div class="position-absolute top-0 start-0 w-100 h-100" style="background: rgba(0, 40, 20, 0.5); backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);"></div>
+
+  <div class="card glass-card p-5 shadow-lg border-0 fade-in-up position-relative" style="width: 500px; max-width: 100%; z-index: 10;">
+    
+    <div class="text-center mb-4">
+      <div class="bg-success bg-opacity-10 d-inline-block p-3 rounded-circle text-success mb-3">
+        <i class="fa-solid fa-user-plus fa-2x"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Create Account</h3>
+      <p class="text-muted">Join the Zero Waste Movement</p>
+    </div>
+
+    <form method="POST" id="registerForm">
+      {{ form.hidden_tag() }}
+
+      <!-- Full Name -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.name.label }}</label>
+        <div class="input-group input-group-lg search-input-group">
+          <span class="input-group-text"><i class="fa-regular fa-user text-muted"></i></span>
+          {{ form.name(class="form-control", placeholder="Enter your full name") }}
+        </div>
+        {% if form.name.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.name.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <!-- Email -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.email.label }}</label>
+        <div class="input-group input-group-lg search-input-group">
+          <span class="input-group-text"><i class="fa-regular fa-envelope text-muted"></i></span>
+          {{ form.email(class="form-control", placeholder="Enter your email") }}
+        </div>
+        {% if form.email.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.email.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <!-- Password -->
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-semibold text-dark small">{{ form.password.label }}</label>
+          <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text"><i class="fa-solid fa-lock text-muted"></i></span>
+            {{ form.password(class="form-control border-end-0", placeholder="Password", id="password") }}
+            <button type="button" class="btn bg-white border-0 border-start-0 px-2" onclick="togglePassword()">
+              <i class="fa-regular fa-eye text-muted" id="eyeIcon"></i>
+            </button>
+          </div>
+          {% if form.password.errors %}
+            <small class="text-danger mt-1 d-block">{% for error in form.password.errors %}{{ error }}{% endfor %}</small>
+          {% endif %}
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-semibold text-dark small">{{ form.confirm_password.label }}</label>
+          <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text"><i class="fa-solid fa-shield-check text-muted"></i></span>
+            {{ form.confirm_password(class="form-control", placeholder="Confirm", id="confirmPassword") }}
+          </div>
+          {% if form.confirm_password.errors %}
+            <small class="text-danger mt-1 d-block">{% for error in form.confirm_password.errors %}{{ error }}{% endfor %}</small>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Role Selection -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.role.label }}</label>
+        <div class="search-input-group">
+          {{ form.role(class="form-select form-select-lg border-0 ps-4") }}
+        </div>
+        {% if form.role.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.role.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <!-- Button -->
+      {{ form.submit(class="btn btn-success btn-lg w-100 shadow-sm rounded-pill fw-bold mt-2", id="registerBtn") }}
+
+      <!-- Login link -->
+      <p class="text-center mt-4 mb-0 text-muted">
+        Already have an account? <a href="/login" class="text-success fw-bold text-decoration-none">Login here</a>
+      </p>
+
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  function togglePassword() {
+    let pass = document.getElementById("password");
+    let icon = document.getElementById("eyeIcon");
+    if (pass.type === "password") {
+      pass.type = "text";
+      icon.classList.remove("fa-eye");
+      icon.classList.add("fa-eye-slash");
+    } else {
+      pass.type = "password";
+      icon.classList.remove("fa-eye-slash");
+      icon.classList.add("fa-eye");
+    }
+  }
+
+  document.getElementById("registerForm").addEventListener("submit", function(e) {
+    let name = document.getElementById("name").value.trim();
+    let email = document.getElementById("email").value;
+    let password = document.getElementById("password").value;
+    let confirmPassword = document.getElementById("confirmPassword").value;
+
+    let valid = true;
+
+    // Reset errors
+    document.getElementById("nameError").innerText = "";
+    document.getElementById("emailError").innerText = "";
+    document.getElementById("passwordError").innerText = "";
+    document.getElementById("confirmError").innerText = "";
+
+    // Name validation
+    if (name.length < 3) {
+      document.getElementById("nameError").innerText = "Name must be at least 3 characters.";
+      valid = false;
+    }
+
+    // Email validation
+    if (!email.includes("@")) {
+      document.getElementById("emailError").innerText = "Please enter a valid email address.";
+      valid = false;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      document.getElementById("passwordError").innerText = "Password must be at least 6 characters.";
+      valid = false;
+    }
+
+    // Confirm password check
+    if (password !== confirmPassword) {
+      document.getElementById("confirmError").innerText = "Passwords do not match.";
+      valid = false;
+    }
+
+    if (!valid) {
+      e.preventDefault();
+    } else {
+      let btn = document.getElementById("registerBtn");
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i>Creating Account...';
+      btn.disabled = true;
+    }
+  });
+</script>
+
+{% endblock %}

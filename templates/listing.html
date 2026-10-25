@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2 class="mb-3 text-success">🍱 Available Food</h2>
+
+<div class="row mb-4">
+  <div class="col-md-6">
+    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Search food...">
+  </div>
+  <div class="col-md-3">
+    <select id="filterStatus" class="form-select">
+      <option value="">All</option>
+      <option value="Available">Available</option>
+      <option value="Requested">Requested</option>
+    </select>
+  </div>
+</div>
+
+<div class="row" id="foodContainer">
+  {% for food in foods %}
+  <div class="col-md-4 food-card" data-title="{{ food.title }}" data-status="{{ food.status }}">
+    
+    <div class="card shadow-sm mb-4 h-100 border-0 food-hover">
+      
+      <div class="card-body">
+        <h5 class="card-title text-success">{{ food.title }}</h5>
+        <p>{{ food.description }}</p>
+
+        
+        <span class="badge 
+          {% if food.status == 'Available' %} bg-success
+          {% elif food.status == 'Requested' %} bg-warning text-dark
+          {% else %} bg-secondary
+          {% endif %}
+        ">{{ food.status }}</span>
+
+        <p class="mt-2 text-muted">👤 {{ food.donor.name }}</p>
+        {% if food.location %}
+        <p class="text-muted">📍 {{ food.location }}</p>
+        {% endif %}
+
+        <!-- Like -->
+        <button class="btn btn-sm btn-outline-danger like-btn" onclick="likeFood(this)">
+          ❤️ Like
+        </button>
+      </div>
+
+      <div class="card-footer bg-white">
+        {% if current_user.is_authenticated and current_user.role == 'receiver' and food.status == 'Available' %}
+        <form method="POST" action="{{ url_for('request_food', food_id=food.id) }}" onsubmit="showToast()">
+          <button type="submit" class="btn btn-outline-success w-100">Request Food</button>
+        </form>
+        {% elif food.status != 'Available' %}
+        <button class="btn btn-outline-secondary w-100" disabled>{{ food.status }}</button>
+        {% endif %}
+      </div>
+
+    </div>
+
+  </div>
+  {% endfor %}
+</div>
+
+{% if not foods %}
+<p>No food available right now.</p>
+{% endif %}
+
+
+<div class="toast position-fixed bottom-0 end-0 p-3" id="toastMsg">
+  <div class="toast-body bg-success text-white">
+    Request sent successfully!
+  </div>
+</div>
+
+
+<style>
+.food-hover:hover {
+  transform: scale(1.03);
+  transition: 0.3s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+</style>
+
+
+<script>
+
+  
+  document.getElementById("searchInput").addEventListener("keyup", function() {
+    let value = this.value.toLowerCase();
+    document.querySelectorAll(".food-card").forEach(card => {
+      let title = card.getAttribute("data-title").toLowerCase();
+      card.style.display = title.includes(value) ? "block" : "none";
+    });
+  });
+
+ 
+  document.getElementById("filterStatus").addEventListener("change", function() {
+    let value = this.value;
+    document.querySelectorAll(".food-card").forEach(card => {
+      let status = card.getAttribute("data-status");
+      card.style.display = (value === "" || status === value) ? "block" : "none";
+    });
+  });
+
+
+  function likeFood(btn) {
+    btn.classList.toggle("btn-danger");
+    btn.innerHTML = btn.classList.contains("btn-danger") ? "❤️ Liked" : "❤️ Like";
+  }
+
+ 
+  function showToast() {
+    let toast = new bootstrap.Toast(document.getElementById('toastMsg'));
+    toast.show();
+  }
+
+</script>
+
+{% endblock %}

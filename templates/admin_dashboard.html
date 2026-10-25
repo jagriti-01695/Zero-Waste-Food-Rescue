@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4 mb-5" style="min-height: 80vh;">
+  <div class="d-flex justify-content-between align-items-center mb-4 fade-in-up">
+    <h3 class="fw-bold text-dark m-0"><i class="fa-solid fa-shield-halved text-danger me-2"></i>Admin Dashboard</h3>
+  </div>
+
+  <ul class="nav nav-pills mb-4 fade-in-up" id="adminTabs" role="tablist" style="animation-delay: 0.1s;">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active bg-danger bg-opacity-10 text-danger fw-bold border-0" id="users-tab" data-bs-toggle="pill" data-bs-target="#users" type="button" role="tab"><i class="fa-solid fa-users me-2"></i>Manage Users</button>
+    </li>
+    <li class="nav-item ms-2" role="presentation">
+      <button class="nav-link bg-success bg-opacity-10 text-success fw-bold border-0" id="foods-tab" data-bs-toggle="pill" data-bs-target="#foods" type="button" role="tab"><i class="fa-solid fa-bowl-food me-2"></i>Manage Listings</button>
+    </li>
+  </ul>
+
+  <div class="tab-content fade-in-up" id="adminTabsContent" style="animation-delay: 0.2s;">
+    
+    <!-- Users Tab -->
+    <div class="tab-pane fade show active" id="users" role="tabpanel">
+      <div class="card glass-card border-0 shadow-sm p-4">
+        <h5 class="fw-bold mb-4">Registered Users</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Rating</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for u in users %}
+              <tr>
+                <td>{{ u.id }}</td>
+                <td class="fw-bold">{{ u.name }}</td>
+                <td>{{ u.email }}</td>
+                <td>
+                  <span class="badge 
+                    {% if u.role == 'admin' %}bg-danger
+                    {% elif u.role == 'donor' %}bg-success
+                    {% else %}bg-primary{% endif %}">
+                    {{ u.role | capitalize }}
+                  </span>
+                </td>
+                <td>
+                  {% if u.role == 'donor' %}
+                    <span class="text-warning"><i class="fa-solid fa-star me-1"></i>{{ u.average_rating }}</span>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+                <td class="text-end">
+                  {% if u.id != current_user.id %}
+                  <form method="POST" action="{{ url_for('admin_delete_user', user_id=u.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this user and ALL their data?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="fa-solid fa-trash me-1"></i>Delete</button>
+                  </form>
+                  {% else %}
+                  <button class="btn btn-sm btn-secondary rounded-pill px-3" disabled>You</button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Foods Tab -->
+    <div class="tab-pane fade" id="foods" role="tabpanel">
+      <div class="card glass-card border-0 shadow-sm p-4">
+        <h5 class="fw-bold mb-4">Food Listings</h5>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead class="table-light">
+              <tr>
+                <th>ID</th>
+                <th>Photo</th>
+                <th>Title</th>
+                <th>Donor</th>
+                <th>Status</th>
+                <th>Expiry</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for f in foods %}
+              <tr>
+                <td>{{ f.id }}</td>
+                <td>
+                  <img src="{{ url_for('static', filename='uploads/' + f.image_file) }}" alt="{{ f.title }}" class="rounded shadow-sm" style="width: 50px; height: 35px; object-fit: cover;" onerror="this.onerror=null; this.src='{{ url_for('static', filename='uploads/default.jpg') }}';">
+                </td>
+                <td class="fw-bold">{{ f.title }}</td>
+                <td>{{ f.donor.name }}</td>
+                <td>
+                  <span class="badge 
+                    {% if f.status == 'Available' %} bg-success bg-opacity-10 text-success
+                    {% elif f.status == 'Requested' %} bg-warning bg-opacity-10 text-warning
+                    {% else %} bg-secondary bg-opacity-10 text-secondary
+                    {% endif %}
+                  ">{{ f.status }}</span>
+                </td>
+                <td>{{ f.expiry_date if f.expiry_date else 'N/A' }}</td>
+                <td class="text-end">
+                  <form method="POST" action="{{ url_for('admin_delete_food', food_id=f.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this listing?');">
+                    <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3"><i class="fa-solid fa-trash me-1"></i>Delete</button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // Simple tab styling toggle
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', function() {
+      document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.remove('bg-danger', 'bg-success', 'text-danger', 'text-success', 'bg-opacity-10');
+        l.classList.add('text-muted', 'bg-transparent');
+      });
+      if(this.id === 'users-tab') {
+        this.classList.remove('text-muted', 'bg-transparent');
+        this.classList.add('bg-danger', 'bg-opacity-10', 'text-danger');
+      } else {
+        this.classList.remove('text-muted', 'bg-transparent');
+        this.classList.add('bg-success', 'bg-opacity-10', 'text-success');
+      }
+    });
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container d-flex justify-content-center align-items-center py-5" style="min-height: 80vh;">
+  <div class="card glass-card p-5 shadow-lg border-0 fade-in-up" style="width: 600px; max-width: 100%;">
+    
+    <div class="text-center mb-4">
+      <div class="bg-success bg-opacity-10 d-inline-block p-3 rounded-circle text-success mb-3">
+        <i class="fa-solid fa-hand-holding-heart fa-2x"></i>
+      </div>
+      <h3 class="fw-bold text-dark mb-1">Add Food Donation</h3>
+      <p class="text-muted">Share surplus food and reduce waste in your community</p>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="foodForm">
+      {{ form.hidden_tag() }}
+
+      <!-- Title -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.title.label }}</label>
+        <div class="input-group input-group-lg search-input-group">
+          <span class="input-group-text"><i class="fa-solid fa-utensils text-muted"></i></span>
+          {{ form.title(class="form-control border-start-0", placeholder="e.g. Veg Biryani, Fresh Apples", id="title") }}
+        </div>
+        {% if form.title.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.title.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <!-- Description -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.description.label }}</label>
+        <div class="search-input-group">
+          {{ form.description(class="form-control border-0 p-3", rows="3", placeholder="Provide details like quantity, ingredients, or dietary info...", id="description") }}
+        </div>
+        {% if form.description.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.description.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+      </div>
+
+      <div class="row">
+        <!-- Location -->
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-semibold text-dark small">{{ form.location.label }}</label>
+          <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text"><i class="fa-solid fa-location-dot text-muted"></i></span>
+            {{ form.location(class="form-control border-start-0", placeholder="Enter address", id="location") }}
+          </div>
+          {% if form.location.errors %}
+            <small class="text-danger mt-1 d-block">{% for error in form.location.errors %}{{ error }}{% endfor %}</small>
+          {% endif %}
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-semibold text-dark small">{{ form.cost_type.label }}</label>
+          <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text"><i class="fa-solid fa-tag text-muted"></i></span>
+            {{ form.cost_type(class="form-select border-start-0", id="cost_type") }}
+          </div>
+          {% if form.cost_type.errors %}
+            <small class="text-danger mt-1 d-block">{% for error in form.cost_type.errors %}{{ error }}{% endfor %}</small>
+          {% endif %}
+        </div>
+
+        <!-- Expiry Time -->
+        <div class="col-md-6 mb-4">
+          <label class="form-label fw-semibold text-dark small">{{ form.expiry_date.label }}</label>
+          <div class="input-group input-group-lg search-input-group">
+            <span class="input-group-text"><i class="fa-regular fa-clock text-muted"></i></span>
+            {{ form.expiry_date(class="form-control border-start-0 text-muted", type="datetime-local", id="expiry") }}
+          </div>
+          {% if form.expiry_date.errors %}
+            <small class="text-danger mt-1 d-block">{% for error in form.expiry_date.errors %}{{ error }}{% endfor %}</small>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="mb-4">
+        <label class="form-label fw-semibold text-dark small">{{ form.image.label }}</label>
+        <div class="search-input-group p-1">
+          {{ form.image(class="form-control border-0", accept="image/*", onchange="previewImage(event)", id="image") }}
+        </div>
+        {% if form.image.errors %}
+          <small class="text-danger mt-1 d-block">{% for error in form.image.errors %}{{ error }}{% endfor %}</small>
+        {% endif %}
+        <div class="text-center mt-3">
+          <img id="preview" src="#" class="shadow-sm border" style="display:none; max-width: 100%; max-height: 250px; border-radius: 12px; object-fit: cover;">
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="d-flex gap-3 mt-4">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg w-50 shadow-sm rounded-pill fw-bold border">Cancel</a>
+        {{ form.submit(class="btn btn-success btn-lg w-50 shadow-sm rounded-pill fw-bold", id="submitBtn") }}
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+  // Image preview
+  function previewImage(event) {
+    let reader = new FileReader();
+    reader.onload = function(){
+      let output = document.getElementById('preview');
+      output.src = reader.result;
+      output.style.display = "inline-block";
+    };
+    if(event.target.files[0]) {
+      reader.readAsDataURL(event.target.files[0]);
+    } else {
+      document.getElementById('preview').style.display = "none";
+    }
+  }
+
+  // Validation
+  document.getElementById("foodForm").addEventListener("submit", function(e) {
+    let title = document.getElementById("title").value.trim();
+    let desc = document.getElementById("description").value.trim();
+    let valid = true;
+
+    document.getElementById("titleError").innerText = "";
+    document.getElementById("descError").innerText = "";
+
+    if (title.length < 3) {
+      document.getElementById("titleError").innerText = "Title must be at least 3 characters.";
+      valid = false;
+    }
+
+    if (desc.length < 10) {
+      document.getElementById("descError").innerText = "Description must be at least 10 characters.";
+      valid = false;
+    }
+
+    if (!valid) {
+      e.preventDefault();
+    } else {
+      let btn = document.getElementById("submitBtn");
+      btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i>Uploading...';
+      btn.disabled = true;
+    }
+  });
+</script>
+
+{% endblock %}
